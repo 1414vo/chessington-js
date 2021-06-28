@@ -15,11 +15,15 @@ export default class Board {
         }
         return board;
     }
-    
-    isValidAndEmpty(square){
+    isValid(square){
         return square.col >= 0 && square.col < this.board.length
-            && square.row >= 0 && square.row < this.board.length
-            && !this.board[square.row][square.col];
+        && square.row >= 0 && square.row < this.board.length
+    }
+    isValidAndCapturable(square, player){
+        return this.isValid(square) && this.getPiece(square).getPlayer != player;
+    }
+    isValidAndEmpty(square){
+        return this.isValid(square) && !this.board[square.row][square.col];
     }
     setPiece(square, piece) {
         this.board[square.row][square.col] = piece;
@@ -103,7 +107,7 @@ export default class Board {
         const startRow = row - Math.min(row,col), 
             startCol = col -  Math.min(row,col);
         for(let i = 0; i < topEnd; i ++){
-            if(startRow + i >= this.board.length || startCol + i >= this.board.length){
+            if(!this.isValid(Square.at(startRow+i,startCol+i))){
                 topEnd = i-1;
                 break;
             }
@@ -133,7 +137,7 @@ export default class Board {
         const col = square.col, row = square.row;
         let counter = 1;
         while((true)){
-            if(col < counter){
+            if(!this.isValid(Square.at(row + counter, col - counter))){
                 break;
             }
             const current = this.board[row + counter][col - counter];
@@ -150,7 +154,7 @@ export default class Board {
         const leftEnd = row + counter - 1;
         counter = 1;
         while((true)){
-            if(row < counter){
+            if(!this.isValid(Square.at(row - counter, col + counter))){
                 break;
             }
             const current = this.board[row - counter][col + counter];
