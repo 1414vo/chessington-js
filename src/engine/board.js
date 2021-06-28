@@ -32,166 +32,6 @@ export default class Board {
     getPiece(square) {
         return this.board[square.row][square.col];
     }
-
-    getHorizontalBounds(square, player){
-        const row = square.row;
-        const col = square.col;
-        let leftEnd = 0, rightEnd = this.board.length - 1;
-        for(let i = 0; i < this.board.length; i++){
-            if(!!this.board[row][i]){
-                if(this.board[row][i].getPlayer === player){
-                    if(i > col){
-                        rightEnd = i-1;
-                        break;
-                    }else if (i != col){
-                        leftEnd = i + 1;
-                    }
-                }else{
-                    if(i > col){
-                        rightEnd = i;
-                        break;
-                    }else if (i != col){
-                        leftEnd = i;
-                    }
-                }
-            }
-        }
-        return [leftEnd,rightEnd];
-    }
-
-    getVerticalBounds(square, player){
-        const row = square.row;
-        const col = square.col;
-        let bottomEnd = 0, topEnd = this.board[0].length - 1;
-        for(let i = 0; i < this.board[0].length; i++){
-            if(!!this.board[i][col]){
-                if(this.board[i][col].getPlayer === player){
-                    if(i > row){
-                        topEnd = i-1;
-                        break;
-                    }else if (i != row){
-                        bottomEnd = i + 1;
-                    }
-                }else{
-                    if(i > row){
-                        topEnd = i;
-                        break;
-                    }else if (i != row){
-                        bottomEnd = i;
-                    }
-                }
-            }
-        }
-        return [bottomEnd, topEnd];
-    }
-
-    getHorizontalSquaresBetween(leftEnd, rightEnd, row){
-        let horizSquares = [];
-        for(let i = leftEnd; i <= rightEnd; i++){
-            horizSquares.push(Square.at(row,i));
-        }
-        return horizSquares;
-    }
-
-    getVerticalSquaresBetween(bottomEnd, topEnd, col){
-        let vertSquares = [];
-        for(let i = bottomEnd; i <= topEnd; i++){
-            vertSquares.push(Square.at(i,col));
-        }
-        return vertSquares;
-    }
-    
-    getUpDiagonalBounds(square,player){
-        let bottomEnd = 0, topEnd = Math.min(this.board.length, this.board[0].length);
-        const col = square.col, row = square.row;
-        const startRow = row - Math.min(row,col), 
-            startCol = col -  Math.min(row,col);
-        for(let i = 0; i < topEnd; i ++){
-            if(!this.isValid(Square.at(startRow+i,startCol+i))){
-                topEnd = i-1;
-                break;
-            }
-            if(!!this.board[startRow + i][startCol + i]){
-                if(this.board[startRow + i][startCol + i].getPlayer === player){
-                    if(startRow + i > row){
-                        topEnd = i-1;
-                        break;
-                    }else if (i != row){
-                        bottomEnd = i + 1;
-                    }
-                }else{
-                    if(i > row){
-                        topEnd = i;
-                        break;
-                    }else if (i != row){
-                        bottomEnd = i;
-                    }
-                }
-            }
-        }
-        return [bottomEnd, topEnd];
-    }
-
-    getDownDiagonalBounds(square, player){
-
-        const col = square.col, row = square.row;
-        let counter = 1;
-        while((true)){
-            if(!this.isValid(Square.at(row + counter, col - counter))){
-                break;
-            }
-            const current = this.board[row + counter][col - counter];
-            if(!!current){
-                if(current.getPlayer == player){
-                    break;
-                }else{
-                    counter++;
-                    break;
-                }
-            }
-            counter++;
-        }
-        const leftEnd = row + counter - 1;
-        counter = 1;
-        while((true)){
-            if(!this.isValid(Square.at(row - counter, col + counter))){
-                break;
-            }
-            const current = this.board[row - counter][col + counter];
-            if(!!current){
-                if(current.getPlayer == player){
-                    break;
-                }else{
-                    counter++;
-                    break;
-                }
-            }
-            counter++;
-         }
-        const rightEnd = row - counter + 1;
-        return [leftEnd, rightEnd];
-    }
-
-    getDiagonalMoves(square,player){
-        let diagSquares = [];
-        const upDiagonal = this.getUpDiagonalBounds(square, player);
-        const col = square.col, row = square.row;
-        const startRow = row - Math.min(row,col), 
-            startCol = col -  Math.min(row,col);
-        for(let i = upDiagonal[0]; i <= upDiagonal[1]; i++){
-            if(i != row){
-                diagSquares.push(Square.at(startRow + i, startCol + i));
-            }
-        }
-        const downDiagonal = this.getDownDiagonalBounds(square, player);
-        for(let i = downDiagonal[0]; i >= downDiagonal[1]; i--){
-            if(i != row){
-                diagSquares.push(Square.at(i, row + col - i));
-            }
-        }
-        return diagSquares;
-    }
-
     findPiece(pieceToFind) {
         for (let row = 0; row < this.board.length; row++) {
             for (let col = 0; col < this.board[row].length; col++) {
@@ -202,7 +42,55 @@ export default class Board {
         }
         throw new Error('The supplied piece is not on the board');
     }
-
+    getSquaresInDirection(square, player, topShift, rightShift){
+        let squareList = [];
+        let shift = 1;
+        const col = square.col, row = square.row;
+        while(this.isValidAndEmpty(Square.at(row + shift*topShift, col + shift*rightShift))){
+            squareList.push(Square.at(row + shift*topShift, col + shift*rightShift));
+            shift++;
+        }
+        if(this.isValidAndCapturable(Square.at(row + shift*topShift, col + shift*rightShift), player)){
+            squareList.push(Square.at(row + shift*topShift, col + shift*rightShift));
+        }
+        return squareList;
+    }
+    getTopSquares(square, player){
+        return this.getSquaresInDirection(square, player, 1, 0);
+    }
+    getBottomSquares(square, player){
+        return this.getSquaresInDirection(square, player, -1, 0);
+    }
+    getRightSquares(square, player){
+        return this.getSquaresInDirection(square, player, 0, 1);
+    }
+    getLeftSquares(square, player){
+        return this.getSquaresInDirection(square, player, 0, -1);
+    }
+    getTopRightSquares(square, player){
+        return this.getSquaresInDirection(square, player, 1, 1);
+    }
+    getTopLeftSquares(square, player){
+        return this.getSquaresInDirection(square, player, 1, -1);
+    }
+    getBottomRightSquares(square, player){
+        return this.getSquaresInDirection(square, player, -1, 1);
+    }
+    getBottomLeftSquares(square, player){
+        return this.getSquaresInDirection(square, player, -1, -1);
+    }
+    getHorizontalSquares(square, player){
+        return this.getRightSquares(square,player).concat(this.getLeftSquares(square,player));
+    }
+    getVerticalSquares(square, player){
+        return this.getTopSquares(square, player).concat(this.getBottomSquares(square,player));
+    }
+    getUpDiagonalSquares(square,player){
+        return this.getTopRightSquares(square,player).concat(this.getBottomLeftSquares(square,player));
+    }
+    getDownDiagonalSquares(square,player){
+        return this.getTopLeftSquares(square,player).concat(this.getBottomRightSquares(square,player));
+    }
     movePiece(fromSquare, toSquare) {
         const movingPiece = this.getPiece(fromSquare);        
         if (!!movingPiece && movingPiece.player === this.currentPlayer) {

@@ -7,19 +7,9 @@ export default class Rook extends Piece {
     }
 
     getAvailableMoves(board) {
-        let availableMoves = [];
-        const currentSquare = board.findPiece(this);
-        const horizBounds = board.getHorizontalBounds(currentSquare, this.player);
-        const vertBounds = board.getVerticalBounds(currentSquare, this.player);
-        availableMoves = availableMoves.concat(
-            board.getHorizontalSquaresBetween(
-                horizBounds[0], horizBounds[1], currentSquare.row)
-                .filter(x => !x.equals(currentSquare)));
-        availableMoves = availableMoves.concat(
-            board.getVerticalSquaresBetween(
-                vertBounds[0], vertBounds[1], currentSquare.col)
-                .filter(x => !x.equals(currentSquare)));
-        return availableMoves;
+        const currPiece = board.findPiece(this);
+        return board.getHorizontalSquares(currPiece,this.player)
+            .concat(board.getVerticalSquares(currPiece,this.player));
     }
 
     

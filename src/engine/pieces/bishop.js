@@ -5,6 +5,8 @@ export default class Bishop extends Piece {
     }
 
     getAvailableMoves(board) {
-        return board.getDiagonalMoves(board.findPiece(this),this.player);
+        const currPiece = board.findPiece(this);
+        return board.getUpDiagonalSquares(currPiece,this.player)
+            .concat(board.getDownDiagonalSquares(currPiece,this.player));
     }
 }
