@@ -20,7 +20,7 @@ export default class Board {
         && square.row >= 0 && square.row < this.board.length
     }
     isValidAndCapturable(square, player){
-        return this.isValid(square) && this.getPiece(square).getPlayer != player;
+        return this.isValid(square) && !!this.board[square.row][square.col] && this.getPiece(square).getPlayer != player;
     }
     isValidAndEmpty(square){
         return this.isValid(square) && !this.board[square.row][square.col];

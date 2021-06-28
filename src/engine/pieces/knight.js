@@ -15,7 +15,7 @@ export default class Knight extends Piece {
                     availableMoves.push(Square.at(row+i,col+j));
                 }
                 if(board.isValidAndEmpty(Square.at(row+j,col+i))
-                || board.isValidAndCapturable(Square.at(row + i, col + j),this.player)){
+                || board.isValidAndCapturable(Square.at(row + j, col + i),this.player)){
                     availableMoves.push(Square.at(row+j,col+i));
                 }
             }
